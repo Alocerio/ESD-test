@@ -58,7 +58,7 @@ const authResponse = await cca.acquireTokenByClientCredential(tokenRequest);
 
 
 /*
-const tokenResponse = response.accessToken;
+const tokenResponse =  authResponse.accessToken;
 
 
 let query = await fetch('https://sandamericas.channelinclusiontest.microsoft.com/channelinclusionREST.svc/v3_1/' , {    
