@@ -1,14 +1,14 @@
 
 import { ConfidentialClientApplication } from '@azure/msal-node'; 
-
+import fetch from 'node-fetch';
 import fs from 'fs'
 import crypto from 'crypto';
+
+//https://sandamericas.channelinclusiontest.microsoft.com/channelinclusionREST.svc/v3_1/catalog?utcUpdatesFrom=10/28/2011+12:00:00&pg=1&lang=en-us
 
 // ##CERTIFICATE KEYS
 const certThumbprint = "734F07557964BEAA1F4786513E817BB3E92BEFBB";
 const privateKeySource = fs.readFileSync('./certs/certTopk8.key');
-
-//const privateKey = Buffer.from(privateKeySource, 'base64').toString().replace(/\r/g, "").replace(/\n/g, ""); 
 
 const privateKeyObject = crypto.createPrivateKey({
     key: privateKeySource,
@@ -36,40 +36,52 @@ const config = {
  
     }
 };
-
+//msal.js instance
 const cca = new ConfidentialClientApplication(config);
-
+//request token
 const tokenRequest = {
+    scopes: ["https://sandbox.esd.channelinclusion.microsoft.com/.default" ]
+}
+let url = "https://sandamericas.channelinclusiontest.microsoft.com/channelinclusionREST.svc/v3_1/catalog?utcUpdatesFrom=2018-01-01&lang=ww-WW&pg=1"
 
-    scopes: ["https://sandbox.esd.channelinclusion.microsoft.com/.default" ], 
-  
+//Getting token
+const authResponse = await cca.acquireTokenByClientCredential(tokenRequest);    
+console.log('Token response',authResponse);
+//save token
+const token = authResponse.accessToken;
+
+//Header
+const header = {
+    method: 'GET',
+    headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    mode: 'cors',
+    cache: 'default'
 }
 
-//Get token by acquireTokenByClientCredential()
+//Fetch function
+async function Fecher(url, Header) {
+	 await fetch(url, Header)
+		.then(response => response.json())
+        .then(datos => console.log(datos))
+        .catch(error => console.log(error.message));
+}
 
-try {
-const authResponse = await cca.acquireTokenByClientCredential(tokenRequest);
-    console.dir(authResponse); // access token
-}  catch (error) {
-    console.dir(JSON.stringify(error));
-} 
-
-
-
-
+Fecher(url, header)
 /*
-const tokenResponse =  authResponse.accessToken;
+const urlCatalogo ="catalog?utcUpdatesFrom=12%2f01%2f2021+12%3a00%3a00&pg=1&lang=ww-WW"
+let catLoad = await fetch('https://sandamericas.channelinclusiontest.microsoft.com/channelinclusionREST.svc/v3_1/catalog?utcUpdatesFrom=12%2f01%2f2021+12%3a00%3a00&pg=1&lang=es-AR', {
+method: 'GET',    
+headers: {
+        'Authorization': `Bearer ${token}`
+        }
+        });
+
+ let json = await catLoad.json();
+    console.log('Catalogo response',json);
 
 
-let query = await fetch('https://sandamericas.channelinclusiontest.microsoft.com/channelinclusionREST.svc/v3_1/' , {    
-            headers: {
-                    'Authorization': `Bearer ${tokenResponse}`,
-                },
-})  
-
-// console.dir(json);
-let json = await query.json();
-
-// console.log(json); 
 
 */
