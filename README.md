@@ -1,5 +1,6 @@
-# ESD-AAD-TEST
-Just a AAD test // Air Computers 
+# ESD-AAD-TEST // Air Computers 
+
+#Error GET STATUS API
 
 ## Docs 
 
